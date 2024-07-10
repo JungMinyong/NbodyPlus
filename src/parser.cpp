@@ -6,7 +6,7 @@ char* foutput;
 double inputTime = 0.0;
 double endTime = 0.0;
 double outputTimeStep = 0.;
-
+double communicationTimeStep = 0.;// wispedia
 int Parser(int argc, char *argv[]) {
 	for (int i = 1; i < argc; ++i) {
 
@@ -44,6 +44,15 @@ int Parser(int argc, char *argv[]) {
 				i++; // Skip the next argument as it's already processed
 			} else {
 				std::cerr << "Error: Missing argument for -tend/--double option" << std::endl;
+				return -2; // Error: Missing argument
+			}
+		} else if (arg == "-dtcomm") {
+			if (i + 1 < argc) {
+				communicationTimeStep = std::atof(argv[i + 1]);
+				std::cout << "Double value: " << communicationTimeStep << std::endl;
+				i++; // Skip the next argument as it's already processed
+			} else {
+				std::cerr << "Error: Missing argument for -dtcomm option" << std::endl;
 				return -2; // Error: Missing argument
 			}
 		} else if (arg == "-d" || arg == "--dir") {

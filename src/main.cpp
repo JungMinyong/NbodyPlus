@@ -6,6 +6,7 @@
 
 
 using namespace std;
+int Communication_test(std::vector<Particle*> &particle);
 
 //Global Variables
 int NNB; double global_time; //bool debug;
@@ -51,11 +52,13 @@ int main(int argc, char *argv[]) {
 	global_time = 0.;
 	//debug = true;
 
-	//InitialCommunication(particle);
+	// InitialCommunication(particle);
+	Communication_test(particle);
 	Parser(argc, argv);
 
 	EnzoTimeStep   = endTime/1e10; // endTime should be Myr
 	outputTimeStep = outputTimeStep/endTime; // endTime should be Myr
+	communicationTimeStep = communicationTimeStep/endTime; //wispedia
 
 	cout << "EnzoTimeStep = "   << EnzoTimeStep   << endl;
 	cout << "outputTimeStep = " << outputTimeStep << endl;

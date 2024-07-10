@@ -177,7 +177,6 @@ void Particle::calculateIrrForce() {
 	 ********************************************************/
 	for (int dim=0; dim<Dim; dim++) {
 
-
 		// do the higher order correcteion
 		da_dt2  = (a_irr[dim][0] - a_tmp[dim]) / dt2; //  - a_reg[dim][1]*dt_ex
 		adot_dt = (a_irr[dim][1] + adot_tmp[dim]) / dt;
@@ -197,7 +196,7 @@ void Particle::calculateIrrForce() {
 		// note that these higher order terms and lowers have different neighbors
 		a_irr[dim][0] = a_tmp[dim];
 		a_irr[dim][1] = adot_tmp[dim];
-		a_irr[dim][2] = a2;
+		a_irr[dim][2] = a2 + a3*dt; //added by wispedia
 		a_irr[dim][3] = a3;
 	}
 

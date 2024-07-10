@@ -2,6 +2,7 @@
 #include <iostream>
 #include "defs.h"
 #include "global.h"
+#include "nbody.h" //wispedia, for test
 
 int writeParticle(std::vector<Particle*> &particle, double MinRegTime, int outputNum);
 // int ReceiveFromEzno(std::vector<Particle*> &particle);
@@ -11,6 +12,7 @@ bool RegularAccelerationRoutine(std::vector<Particle*> &particle);
 bool IrregularAccelerationRoutine(std::vector<Particle*> &particle);
 void AddNewBinariesToList(std::vector<Particle*> &particle);                                                               
 void BinaryAccelerationRoutine(double next_time, ULL next_block, std::vector<Particle*> &particle);
+int Communication_test(std::vector<Particle*> &particle);
 
 bool IsOutput           = false;
 double binary_time      = 0;
@@ -20,6 +22,7 @@ double outputTime       = 0;
 ULL NextRegTimeBlock    = 0;
 int outNum              = 0;
 double global_time_irr  = 0;
+double communicationTime = 0; // wispedia
 std::vector<Particle*> ComputationChain{};
 TimeTracer _time;
 
@@ -38,7 +41,7 @@ void Evolve(std::vector<Particle*> &particle) {
 
 	writeParticle(particle, global_time, outNum++);
 	outputTime = outputTimeStep;
-
+	communicationTime = communicationTimeStep; //wispedia
 	while (true) {
 
 		// It's time to compute regular force.
@@ -67,6 +70,10 @@ void Evolve(std::vector<Particle*> &particle) {
 
 		global_time = NextRegTimeBlock*time_step;
 
+		if (communicationTime <= global_time){
+			Communication_test(particle); //added by wispedia
+			communicationTime += communicationTimeStep;
+		}
 		// create output at appropriate time intervals
 		if (outputTime <= global_time ) {
 			writeParticle(particle, global_time, outNum++);

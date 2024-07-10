@@ -246,7 +246,7 @@ void CalculateRegAccelerationOnGPU(std::vector<Particle*> RegularList, std::vect
 			//ptcl->NewPosition[dim] = ptcl->PredPosition[dim]; // + a2*dt4/24 + a3*dt5/120;
 			//ptcl->NewVelocity[dim] = ptcl->PredVelocity[dim]; // + a2*dt3/6  + a3*dt4/24;
 
-			ptcl->a_reg[dim][2] = a2;
+			ptcl->a_reg[dim][2] = a2 + a3*dt; //added by wispedia
 			ptcl->a_reg[dim][3] = a3;
 			// reset for future use
 			a_tmp[dim]    = 0.;

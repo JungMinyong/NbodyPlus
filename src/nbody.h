@@ -7,3 +7,5 @@ int InitializeParticle(std::vector<Particle*> &particle);
 void Evolve(std::vector<Particle*> &particle);
 int InitialCommunication(std::vector<Particle*> &particle);
 int Parser(int argc, char* argv[]);
+int Communication_test(std::vector<Particle*> &particle); //added by wispedia
+

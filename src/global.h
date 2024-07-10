@@ -58,6 +58,7 @@ extern char* foutput;
 extern bool IsOutput;
 extern double outputTime;
 extern double outputTimeStep;
+extern double communicationTimeStep;//wispedia
 extern int outNum;
 //
 //
