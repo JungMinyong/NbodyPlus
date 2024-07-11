@@ -41,7 +41,9 @@ void Evolve(std::vector<Particle*> &particle) {
 
 	writeParticle(particle, global_time, outNum++);
 	outputTime = outputTimeStep;
+
 	communicationTime = communicationTimeStep; //wispedia
+	
 	while (true) {
 
 		// It's time to compute regular force.
@@ -70,7 +72,8 @@ void Evolve(std::vector<Particle*> &particle) {
 
 		global_time = NextRegTimeBlock*time_step;
 
-		if (communicationTime <= global_time){
+		if ((communicationTimeStep!=0.) && (communicationTime <= global_time)) {
+			fprintf(stderr, "Communication, T=%e \n",global_time);
 			Communication_test(particle); //added by wispedia
 			communicationTime += communicationTimeStep;
 		}

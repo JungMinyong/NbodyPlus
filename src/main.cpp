@@ -1,12 +1,11 @@
 #include <iostream>
-//#include "defs.h"
+#include "defs.h"
 #include "global.h"
 #include "nbody.h"
 #include "cuda/cuda_functions.h"
 
 
 using namespace std;
-int Communication_test(std::vector<Particle*> &particle);
 
 //Global Variables
 int NNB; double global_time; //bool debug;
@@ -53,7 +52,6 @@ int main(int argc, char *argv[]) {
 	//debug = true;
 
 	// InitialCommunication(particle);
-	Communication_test(particle);
 	Parser(argc, argv);
 
 	EnzoTimeStep   = endTime/1e10; // endTime should be Myr
@@ -63,8 +61,10 @@ int main(int argc, char *argv[]) {
 	cout << "EnzoTimeStep = "   << EnzoTimeStep   << endl;
 	cout << "outputTimeStep = " << outputTimeStep << endl;
 
-	if (readData(particle) == FAIL)
+	if (readData(particle) == FAIL){
 		fprintf(stderr, "Read Data Failed!\n");
+		return 0;
+	}
 
 	/***
 		for (Particle* elem: particle) {
@@ -78,7 +78,20 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr, "Initializing Particles!\n");
 	InitializeParticle(particle);
 
-
+	if (communicationTimeStep!=0.){
+		Communication_test(particle);
+		for (Particle *ptcl: particle){
+			for (int dim=0; dim < Dim; dim++){
+				ptcl->a_tot[dim][0] += ptcl->BackgroundAcceleration[dim];
+				#ifdef TT
+				ptcl->a_reg[dim][0] += ptcl->BackgroundAcceleration[dim]; //new
+				ptcl->a_tot[dim][1] += ptcl->BackgroundAccelerationDot[dim]; //new
+				ptcl->a_reg[dim][1] += ptcl->BackgroundAccelerationDot[dim]; //new
+				#endif
+			}
+			fprintf(stderr, "BackgroundAcceleration[0]=%e\n", ptcl->BackgroundAcceleration[0]);
+		}
+	}
 	//createComputationChain(particle);
 
 	/*

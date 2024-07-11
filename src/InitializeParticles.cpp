@@ -289,9 +289,18 @@ void CalculateAcceleration01(Particle* ptcl1, std::vector<Particle*> &particle) 
 	} // endfor ptcl2
 		//
 	for (int dim=0; dim<Dim; dim++)	 {
+		#ifdef TT
+		ptcl1->a_reg[dim][0] += ptcl1->BackgroundAcceleration[dim]; //incorporate Background into a_Reg
+		ptcl1->a_reg[dim][1] += ptcl1->BackgroundAccelerationDot[dim]; //incorporate Background into a_Reg
+		#endif
 		for (int order=0; order<2; order++) {
-			ptcl1->a_tot[dim][order] = ptcl1->a_reg[dim][order] + ptcl1->a_irr[dim][order]; 
+			ptcl1->a_tot[dim][order] = ptcl1->a_reg[dim][order] + ptcl1->a_irr[dim][order];  
 		}
+		// ptcl1->a_tot[dim][0] += ptcl1->BackgroundAcceleration[dim]; //fix the error, old
+		#ifndef TT
+		ptcl1->a_tot[dim][0] += ptcl1->BackgroundAcceleration[dim]; //fix the error, old
+		#endif
+
 	}
 	return;
 }

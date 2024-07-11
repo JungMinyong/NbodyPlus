@@ -175,8 +175,31 @@ void Particle::calculateIrrForce() {
 	/*******************************************************
 	 * Position and velocity correction due to 4th order correction
 	 ********************************************************/
+	#define test_debug
 	for (int dim=0; dim<Dim; dim++) {
+		#ifdef test_debug
+		da_dt2  = (a_irr[dim][0] - a_tmp[dim]) / dt2; //  - a_reg[dim][1]*dt_ex
+		adot_dt = (a_irr[dim][1] + adot_tmp[dim]) / dt;
+		a2 =  -6*da_dt2  - 2*adot_dt - 2*a_irr[dim][1]/dt;
+		a3 =  (12*da_dt2 + 6*adot_dt)/dt;
 
+		//fprintf(stderr, "da_dt2=%.2e, adot_dt=%.2e, a2=%.2e, a3=%.2e\n", da_dt2, adot_dt, a2, a3);
+
+		// 4th order correction
+		// save the values in the temporary variables
+		NewPosition[dim] = PredPosition[dim] + a2*dt4/24 + a3*dt5/120;
+		NewVelocity[dim] = PredVelocity[dim] + a2*dt3/6  + a3*dt4/24;
+
+		//NewPosition[dim] = PredPosition[dim];// + a2*dt4/24 + a3*dt5/120;
+		//NewVelocity[dim] = PredVelocity[dim];// + a2*dt3/6  + a3*dt4/24;
+
+		// note that these higher order terms and lowers have different neighbors
+		a_irr[dim][0] = a_tmp[dim];
+		a_irr[dim][1] = adot_tmp[dim];
+		a_irr[dim][2] = a2 + a3*dt; //added by wispedia
+		a_irr[dim][3] = a3;
+
+		#else
 		// do the higher order correcteion
 		da_dt2  = (a_irr[dim][0] - a_tmp[dim]) / dt2; //  - a_reg[dim][1]*dt_ex
 		adot_dt = (a_irr[dim][1] + adot_tmp[dim]) / dt;
@@ -198,12 +221,14 @@ void Particle::calculateIrrForce() {
 		a_irr[dim][1] = adot_tmp[dim];
 		a_irr[dim][2] = a2 + a3*dt; //added by wispedia
 		a_irr[dim][3] = a3;
+		#endif
 	}
 
 
 
 	for (int dim=0; dim<Dim; dim++) {
-		a_tot[dim][0] = a_reg[dim][0] + a_irr[dim][0] + a_reg[dim][1]*dt_ex; // affect the next
+		// a_tot[dim][0] = a_reg[dim][0] + a_irr[dim][0] + a_reg[dim][1]*dt_ex +BackgroundAcceleration[dim]; // affect the next //add background wispedia
+		a_tot[dim][0] = a_reg[dim][0] + a_irr[dim][0] + a_reg[dim][1]*dt_ex; // affect the next //add background wispedia
 		a_tot[dim][1] = a_reg[dim][1] + a_irr[dim][1];
 		a_tot[dim][2] = a_reg[dim][2] + a_irr[dim][2];
 		a_tot[dim][3] = a_reg[dim][3] + a_irr[dim][3];

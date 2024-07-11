@@ -7,9 +7,10 @@
 #include "global.h"
 
 int getLineNumber();
+int getColumnNumber();
 void write_out(std::ofstream& outputFile, const Particle* ptcl);
 void write_neighbor(std::ofstream& outputFile, const Particle* ptcl); 
-const int NUM_COLUMNS = 7; // Define the number of columns
+int NUM_COLUMNS = 7; // Define the number of columns
 const int width = 18;
 
 int readData(std::vector<Particle*> &particle) {
@@ -25,6 +26,12 @@ int readData(std::vector<Particle*> &particle) {
 
 	int NumParticle;
 	NumParticle = getLineNumber();
+	NUM_COLUMNS = getColumnNumber();
+	if (!(NUM_COLUMNS==7 || NUM_COLUMNS==10)){
+		fprintf(stdout, "fail: NUM_COLUMNS = %d", NUM_COLUMNS);
+		return FAIL;
+	}
+	
 	NNB = NumParticle;
 
 	// Declaration
@@ -42,8 +49,6 @@ int readData(std::vector<Particle*> &particle) {
 			data[i][j] = 0;
 		}
 	}
-
-
 	int row = 0;
 
 	std::string line;
@@ -59,6 +64,11 @@ int readData(std::vector<Particle*> &particle) {
 		//particle_temp[row].setParticleInfo(data[row], row);
 		//particle.push_back(new Particle()particle_temp[row]);
 		particle.push_back(new Particle(data[row],row));
+		if (NUM_COLUMNS==10){
+			particle[row]->BackgroundAcceleration[0] = data[row][7];
+			particle[row]->BackgroundAcceleration[1] = data[row][8];
+			particle[row]->BackgroundAcceleration[2] = data[row][9];
+		}
 		++row;
 	}
 
@@ -75,8 +85,10 @@ int readData(std::vector<Particle*> &particle) {
 
 	// Normalize particles
 	std::cout << "Particle normalizing." << std::endl;
+	int count = 0; //wispedia
 	for (Particle* element:particle) {
 		element->normalizeParticle();
+		count+=1;
 	}
 	inputFile.close();
 
@@ -91,8 +103,7 @@ int readData(std::vector<Particle*> &particle) {
 		delete[] data[i];
 	}
 	delete[] data;
-
-
+	
 	return DONE;
 }
 
@@ -248,3 +259,32 @@ void output_time_trace() {
 
 }
 #endif
+
+
+int getColumnNumber() {
+	char delimiter = ' ';
+    std::ifstream inputFile(fname); // Open the file
+
+    if (!inputFile) {
+        std::cerr << "Error: Could not open the file." << std::endl;
+        return -1; // Returning -1 to indicate an error
+    }
+
+    std::string line;
+    if (std::getline(inputFile, line)) { // Read the first line from the file
+        std::stringstream ss(line);
+        std::string column;
+        int columnCount = 0;
+        while (std::getline(ss, column, delimiter)) { // Count columns in the first line
+            columnCount++;
+        }
+
+        std::cout << "Number of columns in the file: " << columnCount << std::endl;
+        inputFile.close(); // Close the file
+        return columnCount;
+    } else {
+        std::cerr << "Error: Could not read the first line." << std::endl;
+        inputFile.close(); // Close the file
+        return -1; // Returning -1 to indicate an error
+    }
+}

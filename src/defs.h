@@ -65,6 +65,7 @@
 #define mass_unit 0.0001424198  // Msun in the unit that G = 1.
 
 #define time_trace
+#define TT
 
 #define mag(a) (a[0]*a[0]+a[1]*a[1]+a[2]*a[2])
 #define mag0(a) (a[0][0]*a[0][0]+a[1][0]*a[1][0]+a[2][0]*a[2][0])

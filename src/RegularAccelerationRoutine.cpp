@@ -17,7 +17,7 @@ bool RegularAccelerationRoutine(std::vector<Particle*> &particle)
 				fprintf(stdout,"-------error--------------------------------------------------------------------------------- \n");
 			}
 			fprintf(stdout, "PID=%d, CurrentTime (Irr, Reg) = (%.3e(%llu), %.3e(%llu)) Myr, NextRegTime= %.3e Myr(%llu),\n"\
-					"dtIrr = %.4e Myr, dtReg = %.4e Myr, blockIrr=%llu (%d), blockReg=%llu (%d)\n",
+					"dtIrr = %.4e Myr, dtReg = %.4e Myr, blockIrr=%llu (%d), blockReg=%llu (%d) BckAcc=%.4e, BckAccDot=%.4e pos=(%.4e %.4e %.4e)\n",
 					ptcl->PID,
 					ptcl->CurrentTimeIrr*EnzoTimeStep*1e10/1e6,
 					ptcl->CurrentBlockIrr,
@@ -30,7 +30,12 @@ bool RegularAccelerationRoutine(std::vector<Particle*> &particle)
 					ptcl->TimeBlockIrr,
 					ptcl->TimeLevelIrr,
 					ptcl->TimeBlockReg,
-					ptcl->TimeLevelReg
+					ptcl->TimeLevelReg,
+					ptcl->BackgroundAcceleration[0],
+					ptcl->BackgroundAccelerationDot[0],
+					ptcl->Position[0],
+					ptcl->Position[1],
+					ptcl->Position[2]
 					);
 			if (ptcl->CurrentBlockReg >= ptcl->CurrentBlockIrr || ptcl->CurrentBlockReg+ptcl->TimeBlockReg != ptcl->CurrentBlockIrr) {
 				fprintf(stdout,"--------------------------------------------------------------------------------------------- \n");

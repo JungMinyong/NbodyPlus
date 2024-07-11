@@ -212,9 +212,47 @@ void CalculateRegAccelerationOnGPU(std::vector<Particle*> RegularList, std::vect
 		dt3 = dt2*dt;
 		dt4 = dt3*dt;
 		dt5 = dt4*dt;
+		#define TT
+
 
 		for (int dim=0; dim<Dim; dim++) {
+			#ifdef TT
+			
+			da_dt2  = (ptcl->a_reg[dim][0] - AccRegReceive[i][dim] + a_tmp[dim] - ptcl->BackgroundAcceleration[dim]) / dt2;
+			adot_dt = (ptcl->a_reg[dim][1] + AccRegDotReceive[i][dim] - adot_tmp[dim] + ptcl->BackgroundAccelerationDot[dim]) / dt;
 
+			a2 =  -6*da_dt2 - 2*adot_dt - 2*ptcl->a_reg[dim][1]/dt;
+			a3 = (12*da_dt2 + 6*adot_dt)/dt;
+			// note that these higher order terms and lowers have different neighbors
+
+			//fprintf(stdout, "a2   =%.3e, a3   =%.3e, dt=%.3e\n", a2, a3, dt);
+			/*
+			if (ptcl->PID == 753) {
+				fprintf(stderr, "dim=%d, a2=%.3e, a3=%.3e/a0=%.3e, atot=%.3e, a_tmp=%.3e, adot_tmp=%.3e, dt=%.3e\n", 
+						dim, a2,a3,ptcl->a_reg[dim][0],AccRegReceive[i][dim],a_tmp[dim],adot_tmp[dim],dt*1e10/1e6);
+				fprintf(stderr, "dim=%d, da_dt2=%.3e, adot_dt=%.3e\n", 
+						dim, da_dt2, adot_dt);
+			}
+			*/
+
+			// 4th order correction
+			// save the values in the temporary variables
+			ptcl->NewPosition[dim] = ptcl->PredPosition[dim] + a2*dt4/24 + a3*dt5/120;
+			ptcl->NewVelocity[dim] = ptcl->PredVelocity[dim] + a2*dt3/6  + a3*dt4/24;
+
+			//ptcl->NewPosition[dim] = ptcl->Position[dim] + a2*dt4/24 + a3*dt5/120;
+			//ptcl->NewVelocity[dim] = ptcl->Velocity[dim] + a2*dt3/6  + a3*dt4/24;
+
+			//ptcl->NewPosition[dim] = ptcl->PredPosition[dim]; // + a2*dt4/24 + a3*dt5/120;
+			//ptcl->NewVelocity[dim] = ptcl->PredVelocity[dim]; // + a2*dt3/6  + a3*dt4/24;
+
+			ptcl->a_reg[dim][2] = a2 + a3*dt; //added by wispedia
+			ptcl->a_reg[dim][3] = a3;
+			// reset for future use
+			a_tmp[dim]    = 0.;
+			adot_tmp[dim] = 0.;
+			
+			#else
 			//fprintf(stdout, "a0   =%.3e, a   =%.3e\n", ptcl->a_reg[dim][0], (AccRegReceive[i][dim] - a_tmp[dim]));
 			//fprintf(stdout, "aodt0=%.3e, adot=%.3e\n", ptcl->a_reg[dim][1], (AccRegDotReceive[i][dim] - adot_tmp[dim]));
 			da_dt2  = (ptcl->a_reg[dim][0] - AccRegReceive[i][dim] + a_tmp[dim]   ) / dt2;
@@ -251,6 +289,7 @@ void CalculateRegAccelerationOnGPU(std::vector<Particle*> RegularList, std::vect
 			// reset for future use
 			a_tmp[dim]    = 0.;
 			adot_tmp[dim] = 0.;
+			#endif
 		}
 		fflush(stdout);
 
@@ -286,8 +325,10 @@ void CalculateRegAccelerationOnGPU(std::vector<Particle*> RegularList, std::vect
 
 		// update force
 		for (int dim=0; dim<Dim; dim++) {
-			ptcl->a_reg[dim][0] = AccRegReceive[i][dim];
-			ptcl->a_reg[dim][1] = AccRegDotReceive[i][dim];
+
+			#ifdef TT
+			ptcl->a_reg[dim][0] = AccRegReceive[i][dim] + ptcl->BackgroundAcceleration[dim]; //+ ptcl->BackgroundAccelerationDot[dim] * dt?
+			ptcl->a_reg[dim][1] = AccRegDotReceive[i][dim] + ptcl->BackgroundAccelerationDot[dim];
 			ptcl->a_irr[dim][0] = AccIrr[i][dim];
 			ptcl->a_irr[dim][1] = AccIrrDot[i][dim];
 			ptcl->a_tot[dim][0] = ptcl->a_reg[dim][0] + ptcl->a_irr[dim][0];
@@ -297,6 +338,19 @@ void CalculateRegAccelerationOnGPU(std::vector<Particle*> RegularList, std::vect
 				ptcl->a_tot[dim][2] = ptcl->a_reg[dim][2];
 				ptcl->a_tot[dim][3] = ptcl->a_reg[dim][3];
 			}
+			#else
+			ptcl->a_reg[dim][0] = AccRegReceive[i][dim];
+			ptcl->a_reg[dim][1] = AccRegDotReceive[i][dim];
+			ptcl->a_irr[dim][0] = AccIrr[i][dim];
+			ptcl->a_irr[dim][1] = AccIrrDot[i][dim];
+			ptcl->a_tot[dim][0] = ptcl->a_reg[dim][0] + ptcl->a_irr[dim][0] + ptcl->BackgroundAcceleration[dim]; //the same with enzoN
+			ptcl->a_tot[dim][1] = ptcl->a_reg[dim][1] + ptcl->a_irr[dim][1];
+			// in case
+			if (ptcl->NumberOfAC == 0) {
+				ptcl->a_tot[dim][2] = ptcl->a_reg[dim][2];
+				ptcl->a_tot[dim][3] = ptcl->a_reg[dim][3];
+			}
+			#endif
 		}
 
 		ptcl->ACList.clear();

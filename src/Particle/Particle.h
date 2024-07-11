@@ -51,6 +51,7 @@ class Particle
 		double a_reg[Dim][HERMITE_ORDER];
 		double a_irr[Dim][HERMITE_ORDER];
 		double BackgroundAcceleration[Dim];
+		double BackgroundAccelerationDot[Dim]; //added by wispedia
 		Particle* NextParticleInEnzo;
 		Particle* NextParticleForComputation;
 		Particle* BinaryPairParticle;
@@ -99,6 +100,7 @@ class Particle
 				PredPosition[i] = 0.;
 				PredVelocity[i] = 0.;
 				BackgroundAcceleration[i] = 0.;
+				BackgroundAccelerationDot[i] = 0.; //added by wispedia
 				for (int j=0; j<HERMITE_ORDER; j++) {
 					a_tot[i][j] = 0.;
 					a_reg[i][j] = 0.;
